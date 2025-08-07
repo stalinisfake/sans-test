@@ -32,6 +32,7 @@ const game = {
   inMenu: false,
   specialStall: false,
   finished: false,
+  introActive: false,
 };
 
 const player = {
@@ -51,6 +52,22 @@ const player = {
 };
 
 const keys = new Set();
+
+// Intro dialogue
+const intro = {
+  lines: [
+    'hey.',
+    'you look tired. me too.',
+    'still moving forward, huh.',
+    'welp. guess we do this the hard way.',
+    'just a heads-up... blue means don\'t move.',
+    'try to keep up.',
+    'ready?'
+  ],
+  idx: 0,
+  timer: null,
+  perLineMs: 1400,
+};
 
 // Entities
 const bones = []; // {x,y,w,h,color: 'white'|'blue', vx, vy}
@@ -102,8 +119,35 @@ function hurt(amount, addKR = 6) {
   }
 }
 
+function advanceIntro() {
+  if (!game.introActive) return;
+  clearTimeout(intro.timer);
+  intro.idx += 1;
+  if (intro.idx < intro.lines.length) {
+    setDialogue(intro.lines[intro.idx]);
+    intro.timer = setTimeout(advanceIntro, intro.perLineMs);
+  } else {
+    // finish intro and start fight
+    game.introActive = false;
+    setDialogue('...');
+    startColdOpen();
+  }
+}
+
+function startIntro() {
+  game.introActive = true;
+  intro.idx = 0;
+  setDialogue(intro.lines[0]);
+  intro.timer = setTimeout(advanceIntro, intro.perLineMs);
+}
+
 function handleKeysDown(e) {
   if (e.repeat) return;
+  // Skip/advance intro with Z or Enter
+  if (game.introActive && (e.key === 'z' || e.key === 'Z' || e.key === 'Enter')) {
+    advanceIntro();
+    return;
+  }
   keys.add(e.key.toLowerCase());
   if (e.key === 'm' || e.key === 'M') {
     if (musicEl.paused) musicEl.play().catch(()=>{}); else musicEl.pause();
@@ -162,8 +206,7 @@ function onMenuAction(action) {
   }
 }
 
-function startBattle() {
-  setDialogue('...');
+function startColdOpen() {
   // cold open: surprise bones from below
   for (let i = 0; i < 8; i++) {
     spawnBone(40 + i * 70, 420, 50, 10, 'white', 0, -2.5);
@@ -171,6 +214,13 @@ function startBattle() {
   game.phaseIndex = 0;
   game.subphaseTime = 0;
   game.inMenu = false; // attacked during intro
+  // enter first menu shortly after
+  setTimeout(() => resetForMenu(), 1400);
+}
+
+function startBattle() {
+  // show intro, then begin
+  startIntro();
 }
 
 function nextAttack() {
@@ -339,6 +389,12 @@ function update(deltaMs) {
   if (!game.running) return;
   game.frame += 1;
   game.subphaseTime += deltaMs;
+
+  // During intro, only UI and skip logic run
+  if (game.introActive) {
+    updateUI();
+    return;
+  }
 
   // Menu timing
   if (!game.inMenu && game.subphaseTime > 1800 && !game.specialStall) {
@@ -510,8 +566,6 @@ function loop(now) {
 function boot() {
   updateUI();
   startBattle();
-  // enter first menu quickly after intro
-  setTimeout(() => resetForMenu(), 1400);
   requestAnimationFrame(loop);
 }
 
