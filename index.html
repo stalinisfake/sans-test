@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Blue Soul Trial</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="game-root">
+      <div id="top-bar">
+        <div id="status">
+          <span id="lv">LV: 19</span>
+          <span id="hp">HP: 92 / 92</span>
+          <span id="kr">KR: 0</span>
+        </div>
+        <div id="dialogue" aria-live="polite"></div>
+      </div>
+
+      <div id="stage-wrapper">
+        <canvas id="stage" width="640" height="480" aria-label="battle stage"></canvas>
+      </div>
+
+      <div id="ui">
+        <button class="menu-btn" data-action="FIGHT">FIGHT</button>
+        <button class="menu-btn" data-action="ACT">ACT</button>
+        <button class="menu-btn" data-action="ITEM">ITEM</button>
+        <button class="menu-btn" data-action="MERCY">MERCY</button>
+      </div>
+
+      <div id="help">
+        <div>
+          Controls: Arrows/WASD to move. Z/Enter to select, X/Escape to cancel. C toggles color (dev). M toggles music.
+        </div>
+        <div>
+          Blue bones hurt when you move. White bones hurt on touch. Blue soul = gravity.
+        </div>
+      </div>
+    </div>
+
+    <audio id="music" loop preload="auto">
+      <!-- Optional: place a file named megalovania.mp3 in the same folder to enable music. -->
+      <source src="megalovania.mp3" type="audio/mpeg" />
+    </audio>
+
+    <script src="main.js"></script>
+  </body>
+</html>
